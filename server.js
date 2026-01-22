@@ -1,3 +1,4 @@
+
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -8,6 +9,14 @@ import vendorRoute from './routes/venderRoute.js'
 import cors from 'cors'
 import cookieParser from "cookie-parser";
 import { cloudinaryConfig } from "./utils/cloudinaryConfig.js";
+
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 
 
 const App = express();

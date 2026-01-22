@@ -74,14 +74,14 @@ export const refreshToken = async (req, res, next) => {
         maxAge: 900000,
         sameSite: "None",
         secure: true,
-        domain: "rent-a-ride-two.vercel.app",
+        domain: ".vercel.app",
       }) // 15 minutes
       .cookie("refresh_token", newRefreshToken, {
         httpOnly: true,
         maxAge: 604800000,
         sameSite: "None",
         secure: true,
-        domain: "rent-a-ride-two.vercel.app",
+        domain: ".vercel.app",
       }) // 7 days
       .status(200)
       .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
@@ -135,20 +135,19 @@ export const signIn = async (req, res, next) => {
     //   maxAge: 900000,
     //   sameSite: "None",
     //   secure: true,
-    //   domain: "rent-a-ride-two.vercel.app"
+    //   domain: ".vercel.app"
     // }) // 15 minutes
     // .cookie("refresh_token", refreshToken, {
     //   httpOnly: true,
     //   maxAge: 604800000,
     //   sameSite: "None",
     //   secure: true,
-    //   domain: "rent-a-ride-two.vercel.app"
+    //   domain: ".vercel.app"
     // })
     // 7 days
 
     res.status(200).json(responsePayload);
 
-    next();
   } catch (error) {
     next(error);
     console.log(error);
@@ -169,7 +168,7 @@ export const google = async (req, res, next) => {
         .cookie("access_token", token, {
           httpOnly: true,
           expires: expireDate,
-          SameSite: "None",
+          sameSite: "None",
           Domain: ".vercel.app",
         })
         .status(200)
