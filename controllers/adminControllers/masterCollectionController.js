@@ -5,33 +5,46 @@ import { errorHandler } from "../../utils/error.js";
 
 const dummyData = [
 
-    //kochi
-    { id: uuidv4(), district: 'Kochi', location: 'kalamassery : skoda service', type: 'location' },
-    { id: uuidv4(), district: 'Kochi', location: 'kalamassery : volkswagen', type: 'location' },
-    { id: uuidv4(), district: 'Kochi', location: 'cheranallur : volkswagen', type: 'location' },
+   // delhi
+{ id: uuidv4(), district: 'Delhi', location: 'connaught place : metro station', type: 'location' },
+{ id: uuidv4(), district: 'Delhi', location: 'dwarka sector 21 : metro station', type: 'location' },
+{ id: uuidv4(), district: 'Delhi', location: 'karol bagh : skoda service', type: 'location' },
+{ id: uuidv4(), district: 'Delhi', location: 'saket : volkswagen service', type: 'location' },
+{ id: uuidv4(), district: 'Delhi', location: 'anand vihar : railway station', type: 'location' },
 
-    //kottayam
+// noida
+{ id: uuidv4(), district: 'Noida', location: 'sector 18 : metro station', type: 'location' },
+{ id: uuidv4(), district: 'Noida', location: 'sector 62 : skoda service', type: 'location' },
+{ id: uuidv4(), district: 'Noida', location: 'sector 63 : volkswagen service', type: 'location' },
+{ id: uuidv4(), district: 'Noida', location: 'jewar : airport', type: 'location' },
 
-    { id: uuidv4(), district: 'Kottayam', location: 'ettumanoor : skoda service', type: 'location' },
-    { id: uuidv4(), district: 'Kottayam', location: 'kottayam : railway station', type: 'location' },
-    { id: uuidv4(), district: 'Kottayam', location: 'thellakom : volkswagen', type: 'location' },
+// ghaziabad
+{ id: uuidv4(), district: 'Ghaziabad', location: 'kaushambi : metro station', type: 'location' },
+{ id: uuidv4(), district: 'Ghaziabad', location: 'vaishali : metro station', type: 'location' },
+{ id: uuidv4(), district: 'Ghaziabad', location: 'indirapuram : skoda service', type: 'location' },
+{ id: uuidv4(), district: 'Ghaziabad', location: 'mohan nagar : volkswagen service', type: 'location' },
 
-    //trivandrum
+// lucknow
+{ id: uuidv4(), district: 'Lucknow', location: 'charbagh : railway station', type: 'location' },
+{ id: uuidv4(), district: 'Lucknow', location: 'amausi : airport', type: 'location' },
+{ id: uuidv4(), district: 'Lucknow', location: 'gomti nagar : skoda service', type: 'location' },
+{ id: uuidv4(), district: 'Lucknow', location: 'alambagh : metro station', type: 'location' },
 
-    { id: uuidv4(), district: 'Trivandrum', location: 'Nh 66 bybass : kochuveli railway station', type: 'location' },
-    { id: uuidv4(), district: 'Trivandrum', location: 'tampanur : central railway station', type: 'location' },
-    { id: uuidv4(), district: 'Trivandrum', location: 'kazhakootam : railway station', type: 'location' },
+// kanpur
+{ id: uuidv4(), district: 'Kanpur', location: 'kanpur central : railway station', type: 'location' },
+{ id: uuidv4(), district: 'Kanpur', location: 'kalyanpur : metro station', type: 'location' },
+{ id: uuidv4(), district: 'Kanpur', location: 'govind nagar : skoda service', type: 'location' },
 
-    //thrissur
-    { id: uuidv4(), district: 'Thrissur', location: 'thrissur : railway station', type: 'location' },
-    { id: uuidv4(), district: 'Thrissur', location: 'valarkavu : near ganam theater', type: 'location' },
-    { id: uuidv4(), district: 'Thrissur', location: 'paliyekara : evm mg', type: 'location' },
-    
+// agra
+{ id: uuidv4(), district: 'Agra', location: 'agra cantt : railway station', type: 'location' },
+{ id: uuidv4(), district: 'Agra', location: 'kheria : airport', type: 'location' },
+{ id: uuidv4(), district: 'Agra', location: 'sikandra : volkswagen service', type: 'location' },
 
-    //calicut
-    { id:uuidv4() , district: 'Calicut', location: 'calicut : railway', type: 'location' },
-    { id: uuidv4(), district: 'Calicut', location: 'calicut : airport', type: 'location' },
-    { id: uuidv4(), district: 'Calicut', location: 'pavangad : evm nissan', type: 'location' },
+// varanasi
+{ id: uuidv4(), district: 'Varanasi', location: 'varanasi junction : railway station', type: 'location' },
+{ id: uuidv4(), district: 'Varanasi', location: 'lal bahadur shastri : airport', type: 'location' },
+{ id: uuidv4(), district: 'Varanasi', location: 'sigra : skoda service', type: 'location' },
+
     
 
     //cars
@@ -80,18 +93,21 @@ const dummyData = [
   ];
   
   // Function to insert dummy data into the database
- export  async function insertDummyData() {
+ export const insertDummyData = async (req, res, next) => {
     try {
         // Insert the dummy data into the collection
         await MasterData.insertMany(dummyData);
+        res.status(200).json({ message: 'Dummy data inserted successfully.' });
         console.log('Dummy data inserted successfully.');
     } catch (error) {
         console.error('Error inserting dummy data:', error);
+        // if data already exists, still return success
+        if (error.code === 11000) {
+          return res.status(200).json({ message: 'Dummy data already exists or inserted.' });
+        }
+        next(errorHandler(500, 'Error inserting dummy data'));
     }
-    finally{
-        mongoose.disconnect();
-    }
-  }
+  };
 
 //app product modal data fetching from db
   export const getCarModelData = async (req,res,next)=> {
