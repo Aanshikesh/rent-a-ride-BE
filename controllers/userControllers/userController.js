@@ -37,7 +37,7 @@ export const updateUser = async (req, res, next) => {
 //delete user
 
 export const deleteUser = async (req, res, next) => {
-  if (req.user.id != req.params.id) {
+  if (!req.user || req.user.id != req.params.id) {
     return next(errorHandler(401, "you can only delete your account"));
   }
   try {
@@ -56,7 +56,22 @@ export const deleteUser = async (req, res, next) => {
 
 export const signOut = async(req,res,next)=> {
   try{
-    // res.clearCookie('access_token','refresh_token')
+    const secureFlag = process.env.NODE_ENV === "production";
+    const cookieOptions = {
+      httpOnly: true,
+      sameSite: secureFlag ? "None" : "Lax",
+      secure: secureFlag,
+    };
+
+    // clear cookies
+    res.clearCookie("access_token", cookieOptions);
+    res.clearCookie("refresh_token", cookieOptions);
+
+    // if we have a user in req, clear its refreshToken in DB
+    if (req.user && req.user.id) {
+      await User.findByIdAndUpdate(req.user.id, { refreshToken: "" });
+    }
+
     res.status(200).json({message:"signedOut successfully"})
   }
   catch(error){

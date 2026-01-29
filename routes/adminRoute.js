@@ -19,7 +19,7 @@ const router = express.Router()
 
 router.post('/dashboard',signIn,adminAuth)
 router.post('/profile',adminProfiile)
-router.get('/signout',signOut)
+router.get('/signout',verifyToken,signOut)
 router.post('/addProduct',multerUploads,addProduct)
 router.get('/showVehicles',showVehicles)
 router.delete('/deleteVehicle/:id',deleteVehicle)

@@ -12,9 +12,9 @@ const router = express.Router()
 
 //Removed verifyToken middleware because of (cors) unable to set and access cookie since i am using free domain from vercel
 
-router.post('/update/:id',updateUser)
-router.delete('/delete/:id',deleteUser)
-router.get('/signout',signOut)
+router.post('/update/:id',verifyToken,updateUser)
+router.delete('/delete/:id',verifyToken,deleteUser)
+router.get('/signout',verifyToken,signOut)
 router.get('/listAllVehicles',listAllVehicles)
 router.post('/showVehicleDetails',showVehicleDetails)
 router.post('/editUserProfile/:id',editUserProfile)
