@@ -75,8 +75,18 @@ app.use((err, req, res, next) => {
 
 /* ========================= DATABASE + SERVER ========================= */
 
+const MONGO_URI = process.env.MONGO_URI || process.env.mongo_uri;
+
+if (!MONGO_URI) {
+  console.error("FATAL: No MongoDB connection string found in environment (MONGO_URI or mongo_uri)");
+  process.exit(1);
+}
+
 mongoose
-  .connect(process.env.mongo_uri)
+  .connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("MongoDB connected");
     app.listen(port, () => {
@@ -85,4 +95,5 @@ mongoose
   })
   .catch((error) => {
     console.error("MongoDB connection failed:", error.message);
+    process.exit(1);
   });

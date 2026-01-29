@@ -95,21 +95,21 @@ export const refreshToken = async (req, res, next) => {
       refreshToken: newRefreshToken,
     });
 
+    const secureFlag = process.env.NODE_ENV === "production";
+    const cookieOptions = (maxAge) => ({
+      httpOnly: true,
+      maxAge,
+      sameSite: secureFlag ? "None" : "Lax",
+      secure: secureFlag,
+    });
+
+    await User.findByIdAndUpdate(user._id, {
+      refreshToken: newRefreshToken,
+    });
+
     res
-      .cookie("access_token", newAccessToken, {
-        httpOnly: true,
-        maxAge: 900000,
-        sameSite: "None",
-        secure: true,
-        domain: ".vercel.app",
-      })
-      .cookie("refresh_token", newRefreshToken, {
-        httpOnly: true,
-        maxAge: 604800000,
-        sameSite: "None",
-        secure: true,
-        domain: ".vercel.app",
-      })
+      .cookie("access_token", newAccessToken, cookieOptions(15 * 60 * 1000))
+      .cookie("refresh_token", newRefreshToken, cookieOptions(7 * 24 * 60 * 60 * 1000))
       .status(200)
       .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
   } catch (error) {
@@ -153,12 +153,19 @@ export const signIn = async (req, res, next) => {
 
     const { password: _, isAdmin, ...rest } = validUser._doc;
 
-    res.status(200).json({
-      accessToken,
-      refreshToken,
-      isAdmin,
-      ...rest,
+    const secureFlag = process.env.NODE_ENV === "production";
+    const cookieOptions = (maxAge) => ({
+      httpOnly: true,
+      maxAge,
+      sameSite: secureFlag ? "None" : "Lax",
+      secure: secureFlag,
     });
+
+    res
+      .cookie("access_token", accessToken, cookieOptions(15 * 60 * 1000))
+      .cookie("refresh_token", refreshToken, cookieOptions(7 * 24 * 60 * 60 * 1000))
+      .status(200)
+      .json({ accessToken, refreshToken, isAdmin, ...rest });
   } catch (error) {
     next(error);
   }
@@ -190,7 +197,7 @@ export const google = async (req, res, next) => {
         username:
           name?.split(" ").join("").toLowerCase() +
           Math.random().toString(36).slice(-6),
-        email,
+        email: email.toLowerCase(),
         password: hashedPassword,
         profilePicture: photo,
         isUser: true,
@@ -203,16 +210,15 @@ export const google = async (req, res, next) => {
 
     const { password, ...rest } = user._doc;
 
-    res
-      .cookie("access_token", token, {
-        httpOnly: true,
-        expires: expireDate,
-        sameSite: "None",
-        secure: true,
-        domain: ".vercel.app",
-      })
-      .status(200)
-      .json(rest);
+    const secureFlag = process.env.NODE_ENV === "production";
+    const cookieOptions = {
+      httpOnly: true,
+      expires: expireDate,
+      sameSite: secureFlag ? "None" : "Lax",
+      secure: secureFlag,
+    };
+
+    res.cookie("access_token", token, cookieOptions).status(200).json(rest);
   } catch (error) {
     next(error);
   }

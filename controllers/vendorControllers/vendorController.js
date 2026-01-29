@@ -13,7 +13,7 @@ export const vendorSignup = async (req, res, next) => {
     const user = await User.create({
       username,
       password: hadshedPassword,
-      email,
+      email: email.toLowerCase(),
       isVendor: true,
     });
     await user.save();
@@ -26,7 +26,7 @@ export const vendorSignup = async (req, res, next) => {
 export const vendorSignin = async (req, res, next) => {
   const { email, password } = req.body;
   try {
-    const validVendor = await User.findOne({ email }).lean();
+    const validVendor = await User.findOne({ email: email.toLowerCase() }).lean();
     if (!validVendor || !validVendor.isVendor) {
       return next(errorHandler(404,"user not found"))
     }
@@ -37,13 +37,18 @@ export const vendorSignin = async (req, res, next) => {
    
     const token = Jwt.sign({ id: validVendor._id }, process.env.ACCESS_TOKEN);
     const { password: hadshedPassword, ...rest } = validVendor;
+    const secureFlag = process.env.NODE_ENV === "production";
+    const cookieOptions = (maxAge) => ({
+      httpOnly: true,
+      maxAge,
+      sameSite: secureFlag ? "None" : "Lax",
+      secure: secureFlag,
+    });
+
     const thirtyDaysInMilliseconds = 30 * 24 * 60 * 60 * 1000;
 
     res
-      .cookie("access_token", token, {
-        httpOnly: true,
-        maxAge: thirtyDaysInMilliseconds,
-      })
+      .cookie("access_token", token, cookieOptions(thirtyDaysInMilliseconds))
       .status(200)
       .json(rest);
   } catch (error) {
@@ -67,18 +72,19 @@ export const vendorSignout = async (req, res, next) => {
 
 export const vendorGoogle = async (req, res, next) => {
   try {
-    const user = await User.findOne({ email: req.body.email }).lean();
+    const user = await User.findOne({ email: req.body.email.toLowerCase() }).lean();
     if (user && user.isVendor) {
       const { password: hashedPassword, ...rest } = user;
       const token = Jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN);
+      const secureFlag = process.env.NODE_ENV === "production";
+      const cookieOptions = {
+        httpOnly: true,
+        expires: expireDate,
+        sameSite: secureFlag ? "None" : "Lax",
+        secure: secureFlag,
+      };
 
-      res
-        .cookie("access_token", token, {
-          httpOnly: true,
-          expires: expireDate,
-        })
-        .status(200)
-        .json(rest);
+      res.cookie("access_token", token, cookieOptions).status(200).json(rest);
     } else {
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
@@ -91,7 +97,7 @@ export const vendorGoogle = async (req, res, next) => {
           req.body.name.split(" ").join("").toLowerCase() +
           Math.random().toString(36).slice(-8) +
           Math.random().toString(36).slice(-8),
-        email: req.body.email,
+        email: req.body.email.toLowerCase(),
         isVendor:true,
         //we cannot set username to req.body.name because other user may also have same name so we generate a random value and concat it to name
         //36 in toString(36) means random value from 0-9 and a-z
