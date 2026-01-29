@@ -50,15 +50,15 @@ app.use(
 // ✅ Handle preflight properly
 app.options("*", cors());
 
-// ✅ Cloudinary config
-app.use("*", cloudinaryConfig);
-
 /* ========================= ROUTES ========================= */
 
 app.use("/api/user", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/vendor", vendorRoute);
+
+// ✅ Cloudinary config (after routes)
+app.use("*", cloudinaryConfig);
 
 /* ========================= ERROR HANDLER ========================= */
 
