@@ -15,15 +15,31 @@ export const signUp = async (req, res, next) => {
       return next(errorHandler(400, "All fields are required"));
     }
 
+    if (username.length < 3) {
+      return next(errorHandler(400, "Username must be at least 3 characters"));
+    }
+
     if (password.length < 6) {
       return next(errorHandler(400, "Password must be at least 6 characters"));
+    }
+
+    // ✅ Check if email already exists
+    const existingEmail = await User.findOne({ email: email.toLowerCase() });
+    if (existingEmail) {
+      return next(errorHandler(409, "Email already registered"));
+    }
+
+    // ✅ Check if username already exists
+    const existingUsername = await User.findOne({ username: username.toLowerCase() });
+    if (existingUsername) {
+      return next(errorHandler(409, "Username already taken"));
     }
 
     const hashedPassword = bcryptjs.hashSync(password, 10);
 
     const newUser = new User({
-      username,
-      email,
+      username: username.toLowerCase(),
+      email: email.toLowerCase(),
       password: hashedPassword,
       isUser: true,
     });
@@ -32,9 +48,10 @@ export const signUp = async (req, res, next) => {
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    // ✅ handle duplicate email
+    // ✅ handle any remaining duplicate key errors from DB
     if (error.code === 11000) {
-      return next(errorHandler(409, "Email already exists"));
+      const field = Object.keys(error.keyPattern)[0];
+      return next(errorHandler(409, `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`));
     }
     next(error);
   }
@@ -109,7 +126,7 @@ export const signIn = async (req, res, next) => {
       return next(errorHandler(400, "Email and password are required"));
     }
 
-    const validUser = await User.findOne({ email });
+    const validUser = await User.findOne({ email: email.toLowerCase() });
     if (!validUser) return next(errorHandler(404, "User not found"));
 
     const validPassword = bcryptjs.compareSync(

@@ -6,15 +6,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     phoneNumber:{
       type:String,
-      unique:true
+      unique:true,
+      sparse: true,
     },
     adress:{
       type:String,
@@ -49,6 +54,11 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// ✅ Drop old indexes and rebuild with proper settings
+userSchema.index({ email: 1 }, { unique: true, sparse: true });
+userSchema.index({ username: 1 }, { unique: true, sparse: true });
+userSchema.index({ phoneNumber: 1 }, { unique: true, sparse: true });
 
 const User = mongoose.model("User", userSchema);
 
